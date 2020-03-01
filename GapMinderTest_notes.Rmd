@@ -1,0 +1,371 @@
+---
+title: "R Notebook"
+output: html_notebook
+runtime: shiny
+---
+
+# TODO
+
+*  This is set up in a so called "reactive environment" **TODO: Read up a bit more on the sematics here** meaning that the code in here will be ready to run as soon as some of the parameters from the interface that is used is changed.
+
+# Getting started
+
+Go to `File -> New File -> Shiny Web App`, write in a name for the application and leave the application type as the default (single file). Click "Create".
+
+This will generate a skeleton for an app. We can directly try running it by pressing "Run App" up to the right. This should open a new window with the starting application. Already now you can see the interactivity. Try dragging the "Number of bins" slide and see how the plot moves. Do you understand how the slider relates to the figure? What happens if you set the number of bins to 5? To 50?
+
+# Understanding the basic application
+
+There are two parts of this application. One part is the "ui" part, and one is the "server". Beyond this we have a call to the library `shiny`, which is the R package used to create R Shiny applications.
+
+The UI ("User Interface") is used to specify what "elements" should be included in the R Shiny graphical interface.
+
+The server part specify what should go on in the background. The end results from here can be shown in the graphical interface, for instance in the form of a plot (here - a histogram). In this case, the sever is generating the plot based on the parameters set in the user interface (the number of bins). The resulting plot is sent to the interface and then displayed.
+
+[Insert schematic figure here]
+
+# Loading the library
+
+```{r}
+library(shiny)
+library(tidyverse)
+theme_set(theme_classic())  # Replaces the default ggplot2 theme, which I really do no like!
+```
+
+https://www.gapminder.org/data/
+
+```{r}
+gapminder_raw <- read_csv("GapMinderTest/income_per_person_gdppercapita_ppp_inflation_adjusted.csv")
+gapminder_parsed <- gapminder_raw %>% 
+    pivot_longer(-1, names_to = "year", values_to="income") %>%
+    mutate(year=as.numeric(year))
+```
+
+## Digging into the ui
+
+There are some things to note here:
+
+* "fluidPage" is used to create a so called page layout which can contain different graphical elements. We could do an empty user interface as specified below. We also specify an empty server function for the shinyApp. If you run the code below, it will just show you a white page.
+
+```{r}
+ui <- fluidPage()
+# The server function should always take at least the arguments "input" and "output"
+server <- function(input, output) {}  
+shinyApp(ui=ui, server=server)
+```
+
+### Adding a title
+
+Now, let's try extending it just by adding a `titelPanel` element. This one is used to specify a title for your application. Other than that, we still use an empty server function. If running this, you will have a title on the top of your application. It is possible to change the styling of this text, but it is a little bit more involved and requires some knowledge about CSS (**either: more on this later in this tutorial, or we skip it**)
+
+```{r}
+ui <- fluidPage(
+    titlePanel("My Fancy Title")
+)
+server <- function(input, output) {}  
+shinyApp(ui=ui, server=server)
+```
+
+### Setting up the layout
+
+You can use many different types of layout for RShiny. Here, we stick with the default "sidebarLayout" which gives us a panel to the left for the settings, and a bigger panel to the right for showing plots.
+
+**If you are interested in layouts beyond this, you can either ... or use Bootstrap to customize your own, read more on ...**.
+
+Running the code below will give you an empty sidebar layout page. Right now it does not look so fancy - you have a small gray area to the left (the sidebar) which will contain your settings, and a larger white area to the right where you will display your figures.
+
+```{r}
+ui <- fluidPage(
+    titlePanel("My Fancy Title"),
+    sidebarLayout(
+        sidebarPanel(),
+        mainPanel()
+    )
+)
+server <- function(input, output) {}
+shinyApp(ui=ui, server=server)
+```
+
+### Adding settings
+
+Now, let's add some settings to our sidebars. These will influence the looks of our plot. There are many types of settings, called "inputs". Some of the more common ones are:
+
+* sliderInput: Gives a slider where one or two values can be specified
+* checkboxInput: Gives a simple checkbox giving a "TRUE" or "FALSE" value
+* numericInput: Directly specify a numeric value - can be both whole numbers (integer) or rounded (float)
+* textInput: Specify free text directly
+* selectInput: Select one or more of a set of predefined choices
+
+For now, let's stick with one numeric input and one text input. The numeric input will be used to specify the number of bins, and the text input to specify the title of the figure.
+
+Furthermore, for our inputs we have to specify certain settings, and in many cases there are optional settings we can use to further customize it. The first argument should always be a string, an "id" which will later on be used to identify this particular element. The second argument should also be a string containing a description which will be shown in the interface.
+
+For the numeric:
+
+* "bins" <- This will be the ID later used to refer to the element
+* "Number of bins:" <- This text will show up in the graphical interface to explain the purpose for the user
+* min = 1 <- A specified minimum value, required for "sliderInput"
+* max = 50 <- A specified maximum value, also required
+* value = 30 <- The default starting value of the slider
+
+For the text input:
+
+* "title" <- The ID for the element
+* "Title of the plot" <- The description of the element
+* value = "Geyser histogram" <- The specified default value of the text input, the default of this one is an empty string ""
+
+Try running it. You should now see two elements inside the gray box - your inputs. The slider should range from 1 to 50 with a default of 30 and the title "Number of bins:". The text input should be named "Title of the plot" and contain the default text "Geyser histogram". The IDs do not show up here, but no worry, they are kept track of in the background, and will be used later in the server part.
+
+```{r}
+ui <- fluidPage(
+    titlePanel("My Fancy Title"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(
+                "bins",
+                "Number of bins:",
+                min = 1,
+                max = 50,
+                value = 30
+            ),
+            textInput(
+                "title",
+                "Title of the plot",
+                value = "Geyser histogram"
+            )
+        ),
+        mainPanel()
+    )
+)
+server <- function(input, output) {}  
+shinyApp(ui=ui, server=server)
+```
+
+A note about parentheses: The structure of the input is like the following. Note that elements on the same level (for instance "titlePanel" and "sliderbarLayout") are separated by a comma. It is a common error to put a comma to much or to little in the user interface part! Luckily, R Studio usually will give you a warning if you haven't closed all of your parenthesis properly, and you can check which parenthesis belong with which by putting the cursor on one of them - then its "sibling" parenthesis will be highlighted.
+
+```
+fluidPage(
+    titlePanel(...),
+    slidebarLayout(
+        sliderInput(...),
+        textInput(...)
+    )
+)
+```
+
+## Specifying plot outputs in the user interface
+
+Finally, we specify the "plotOutput" part in the main panel. But, as we currently do not generate any plots in the background this will not change the look at the interface yet. But, what it does is providing an output point called "distPlot" in the user interface to which we later can draw a plot.
+
+```{r}
+ui <- fluidPage(
+    titlePanel("My Fancy Title"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(
+                "bins",
+                "Number of bins:",
+                min = 1,
+                max = 50,
+                value = 30
+            ),
+            textInput(
+                "title",
+                "Title of the plot",
+                value = "Geyser histogram"
+            )
+        ),
+        mainPanel(
+            plotOutput("distPlot")  # Here, we define a plot output point with the ID "distPlot"
+        )
+    )
+)
+server <- function(input, output) {}  
+shinyApp(ui=ui, server=server)
+```
+
+If you run it now, no plot will show up, because we have not generated any plot yet. Next, we will use code in the server side which will generate a plot which will be shown in the main panel (sent to the ID "distPlot").
+
+### Parenthesis for the interested
+
+If you are familiar with HTML you might be interested to know that this UI actually just is translated to a bunch of HTML. You can inspect it by just printing out the UI. Then you will see a collection of nexted <div> tags.
+
+```{r}
+ui
+```
+
+# Using the server to show plots
+
+Now, we will setup the server to send a plot to the plotOutput we previously specified in the UI.
+
+To link the server to  the previously specified output points, we use the syntax "output$ID" where in this case our ID is  "distPlot". In this case we will render a plot, and for this we use the "renderPlot" function. First, we try to render a static plot using `ggplot` and the `faithful` built in dataset in R. 
+
+## Running the plot outside R Shiny
+
+Make sure you understand the plotting part first by inspecting the dataset:
+
+```{r}
+head(faithful)
+```
+
+...and then doing a stand-alone plot outside R Shiny.
+
+```{r}
+ggplot(faithful, aes(x=eruptions)) + geom_histogram()
+```
+
+It is generally a good practice to make sure you understand your data and your plotting code by itself before inserting it into R Shiny!
+
+## Inserting the plot in RShiny
+
+Now, we are ready to run the plot within R Shiny. Exciting! We use the same UI as before, but now we add a server part which send a static ggplot figure to the "distPlot" output point. (Remember that you specified this as a plotOutput point in the main panel).
+
+```{r}
+ui <- fluidPage(
+    titlePanel("My Fancy Title"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(
+                "bins",
+                "Number of bins:",
+                min = 1,
+                max = 50,
+                value = 30
+            ),
+            textInput(
+                "title",
+                "Title of the plot",
+                value = "Geyser histogram"
+            )
+        ),
+        mainPanel(
+            plotOutput("distPlot")  # Here, we define a plot output point with the ID "distPlot"
+        )
+    )
+)
+server <- function(input,  output)  {
+    output$distPlot <- renderPlot({
+        ggplot(faithful, aes(x=eruptions)) + geom_histogram()
+    })
+}
+shinyApp(ui=ui, server=server)
+```
+
+At this point we have no interactivity, because we have not linked our input parameters to the plot. That is the next step!
+
+## Making our Shiny app interactive
+
+We access the output point of the UI using "output$distPlot". Quite logically, we can access our input elements using "input$bins" and "input$title". We specify these ones directly within the "renderPlot". 
+
+By doing this, we link these parameters from the interface into the plot. RShiny will now automatically detect when any of these change, and when this happends, it will rerun the code. This is called "reactivity" - it will not continuously  rerun the function - only as a *reaction* to that some input related to the function has changed.
+
+Try it out! Change the number of bins and title. You should directly see these changes appear in the plot.
+
+```{r}
+ui <- fluidPage(
+    titlePanel("My Fancy Title"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(
+                "bins",
+                "Number of bins:",
+                min = 1,
+                max = 50,
+                value = 30
+            ),
+            textInput(
+                "title",
+                "Title of the plot",
+                value = "Geyser histogram"
+            )
+        ),
+        mainPanel(
+            plotOutput("distPlot")  # Here, we define a plot output point with the ID "distPlot"
+        )
+    )
+)
+server <- function(input,  output)  {
+    output$distPlot <- renderPlot({
+        ggplot(faithful, aes(x=eruptions)) + geom_histogram(bins=input$bins) + ggtitle(input$title)
+    })
+}
+shinyApp(ui=ui, server=server)
+```
+
+## Adding a second output plot
+
+As we saw before, the faithful geyser dataset contains two columns - the number of eruptions and the waiting time for the volcanos. We might want to show these ones simultaneously in different plots. To do this we simply need to:
+
+* Add another plotOutput in the UI (with another ID)
+* Link another renderPlot to the output on the server side
+* Within this renderPlot, generate the second plot
+
+To remind ourselves of how the data look, just run the "head" command to look at the first lines.
+
+```{r}
+head(faithful)
+```
+
+
+```{r}
+ui <- fluidPage(
+    titlePanel("My Fancy Title"),
+    sidebarLayout(
+        sidebarPanel(
+            selectInput(
+                "countries",
+                "First country",
+                choices=unique(gapminder_parsed$country), 
+                selected = c("Sweden", "Denmark", "Finland", "Norway", "Iceland"), 
+                multiple = TRUE
+            ),
+            sliderInput(
+                "year_range",
+                "Year range",
+                min=min(gapminder_parsed$year),
+                max=max(gapminder_parsed$year),
+                step=1,
+                value = c(min(gapminder_parsed$year), max(gapminder_parsed$year))
+            )
+        ),
+        mainPanel(
+            plotOutput("dot_plot"),  # Here, we define a plot output point with the ID "distPlot"
+            plotOutput("box_plot")
+        )
+    )
+)
+
+server <- function(input,  output)  {
+
+    target_countries_data <- reactive({
+        gapminder_parsed %>% 
+            filter(country %in% input$countries) %>%
+            filter(year > input$year_range[1] & year < input$year_range[2])
+    })
+    
+    output$dot_plot <- renderPlot({
+        ggplot(target_countries_data(), aes(x=year, y=income, color=country)) + geom_point()
+    })
+    
+    output$box_plot <- renderPlot({
+        ggplot(target_countries_data(), aes(x=country, y=income)) + geom_boxplot()
+    })
+}
+shinyApp(ui=ui, server=server)
+```
+
+Note that the functions in the server part are not separated by commas! This is a regular function, and you can think of the output as a list to which you assign values.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
