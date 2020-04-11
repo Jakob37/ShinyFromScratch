@@ -1,2 +1,5 @@
 *.Rproj
 .Rproj.user/
+presentation-figure/
+presentation.Rpres
+
