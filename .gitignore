@@ -1,4 +1,6 @@
 *.Rproj
+.Rhistory
+*.nb.html
 .Rproj.user/
 presentation-figure/
 presentation.Rpres

@@ -69,6 +69,7 @@ Structure of this workshop
     - What is the basics of UI / server
     - What is reactive programming
     - What is the table of content
+    - Recap ggplot2 and dplyr
 2. Loop the practical part
     1. Show a minimal proof-of-concept for each stage
     2. Send them off to implement it themselves, and encourage some exploration around the topic

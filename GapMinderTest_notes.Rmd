@@ -356,7 +356,23 @@ shinyApp(ui=ui, server=server)
 
 Note that the functions in the server part are not separated by commas! This is a regular function, and you can think of the output as a list to which you assign values.
 
+# Making your app interactive using DT and Plotly
 
+```{r}
+
+```
+
+
+# Deploying the app to shinyapps.io
+
+1. Go to shinyapps.io and create a new account
+2. Install the R-package {rsconnect}
+3. Retrieve tokens from the dashboard
+
+```{r eval=FALSE}
+library(rsconnect)
+deployApp()
+```
 
 
 
