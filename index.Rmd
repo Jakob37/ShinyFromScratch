@@ -505,7 +505,7 @@ shinyApp(ui=ui, server=server)
 Exercises
 
 * Download another related dataset from Gapminder (all of them have the same formatting with year and country) and make extra plots using the same filtering thresholds. For example, you could display the GDP in a separate plot.
-
+... TODO write some more
 
 # Extended reading
 
