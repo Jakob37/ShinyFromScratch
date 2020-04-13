@@ -4,11 +4,24 @@ output: html_notebook
 runtime: shiny
 ---
 
-# TODO
-
-*  This is set up in a so called "reactive environment" **TODO: Read up a bit more on the sematics here** meaning that the code in here will be ready to run as soon as some of the parameters from the interface that is used is changed.
-
 # Getting started
+
+## Prerequisites
+
+This tutorial assumes that you have the following things prepared:
+
+* R Studio
+* The R packages: {shiny}, {tidyverse} (for basic parts) and {DT}, {plotly}, {rsconnect} for intermediate parts
+
+You can install the packages by running (it might ask you to restart RStudio - if so, click yes).
+
+Note that this might take some time - in particular if the {tidyverse} package is not installed.
+
+```{r}
+install.packages(c("shiny", "tidyverse", "DT", "plotly", "rsconnect"))
+```
+
+## Create new Shiny project
 
 Go to `File -> New File -> Shiny Web App`, write in a name for the application and leave the application type as the default (single file). Click "Create".
 
