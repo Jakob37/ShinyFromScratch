@@ -2,5 +2,5 @@ Exercise for upcoming RShiny workshop. Using data retrieved from GapMinder for v
 
 https://www.gapminder.org/data/
 
-Temporary deployment link (for interactive Shiny elements):
-https://learnchinesewithrshiny.shinyapps.io/rshinyworkshop/
+Temporary deployment link:
+https://jakobshinyapps.shinyapps.io/rshinyworkshop/
