@@ -11,13 +11,18 @@ runtime: shiny
 This tutorial assumes that you have the following things prepared:
 
 * R Studio
-* The R packages: {shiny}, {tidyverse} (for basic parts) and {DT}, {plotly}, {rsconnect} for intermediate parts
+* The R packages: {shiny}, {tidyverse}
+
+For the final 'extended' parts the following packages are needed: {DT}, {plotly}, {rsconnect}
 
 You can install the packages by running (it might ask you to restart RStudio - if so, click yes).
 
 Note that this might take some time - in particular if the {tidyverse} package is not installed.
 
 ```{r eval=FALSE}
+# Needed packages
+install.packages(c("shiny", "tidyverse"))
+# If you want to complete the final three steps
 install.packages(c("shiny", "tidyverse", "DT", "plotly", "rsconnect"))
 ```
 
@@ -27,25 +32,22 @@ And load the packages.
 library(shiny)
 library(tidyverse)
 theme_set(theme_classic())  # Replaces the default ggplot2 look, not required
-
-# Optional
-library(DT)
-library(plotly)
-library(rsconnect)
 ```
 
-## Retrieve a dataset
+## Preparing a dataset
 
-Feel free to use any dataset you have at hand. This would require that you can independently parse your data in the correct formats - if this feels uncomfortable please use the supplemented data. I have prepared a dataset from Gapminder - an organization dedicated to spread a factful view of the world.
+### Retrieving the data
 
-Data from a range of topics can be explored at:
+A dataset from [Gapminder](https://www.gapminder.org/data) - an organization promoting a factful view of the world - showing life expectancies in different countries since 1800 which is used throughout the tutorial. Gapminder have many datasets formatted in the same way covering a range of topics. Feel free to take a look and use whichever tickles your interest instead!
 
-https://www.gapminder.org/data/
+Other pages for data:
 
-Another pages:
+* [Kaggle](https://www.kaggle.com/), has many great datasets, but might require some more pre-parsing before visualizing
+* If you want to visualize something related to Coronavirus, here is a [source data home page](https://ourworldindata.org/coronavirus-source-data)
 
-* Kaggle (...), has many great datasets, but might require some more pre-parsing before visualizing
-* Coronavirus https://ourworldindata.org/coronavirus-source-data
+## Parsing the data from scratch
+
+**Note: If you don't want to do this part - jump straight to the next section and load the data preparsed.**
 
 I have prepared a comma-separated Gapminder dataset on life expectancy from year 1800. If you have your own dataset, exchange the file path for that one instead.
 
@@ -55,7 +57,27 @@ data_wide <- read_csv("data/gapminder_life_expectancy_years.csv")
 
 This data is in *wide format*, meaning that we have one column per year. In the plotting library {ggplot2} (part of {tidyverse}) the data is expected to be in *long* format with one column showing the year and one column containing all the life expectancies.
 
-This transformation can be done using the command `pivot_longer`. Make sure to inspect the data with `head` and `colnames` so that you understand what has happened.
+For instance, the following matrix is in wide format - the measured data is spread over multiple columns.
+
+```
+country   1900   1950   2000
+Sweden    60     77     80
+Denmark   65     79     82
+```
+
+The same data in long format could look like the following way. Now we have one column for all measurements. This is harder to read, but easier for a computer program to manage.
+
+```
+country  year  life_expectancy
+Sweden   1900  60
+Sweden   1950  77
+Sweden   2000  80
+Denmark  1900  65
+Denmark  1950  79
+Denmark  2000  82
+```
+
+The transformation from wide to long format can be done using the command `pivot_longer` (part of the {tidyr} package, which is part of the {tidyverse}). Make sure to inspect the data with `head` and `colnames` so that you understand what has happened.
 
 ```{r}
 data_long <- data_wide %>% 
@@ -70,6 +92,15 @@ head(data_wide)
 head(data_long)
 ```
 
+## Loading the data preparsed
+
+If you didn't want to do the previous section you can load the data directly. This will load a three-column dataset specifying country, measurement year and estimated life expectancy for that country and year.
+
+```{r}
+data_long <- read_csv("data/gapminder_life_expectancy_years_parsed.csv")
+head(data_long)
+```
+
 ## Create new Shiny project
 
 We are ready to start the Shiny-project!
@@ -80,22 +111,9 @@ This will generate a skeleton for an app. Try runnning it by clicking "Run app".
 
 ![default](images/default_shiny_app.png)
 
-# Shiny from scratch
-
-## A very minimal application
-
-Now we will break down the code and go through it step by step. 
-
-Either replace the content within the .R file you just created with the following line, or run it directly from the notebook.
-
-```{r}
-# library(shiny) <- Uncomment if running in a separate .R file
-ui <- fluidPage()
-server <- function(input, output) {}  
-shinyApp(ui=ui, server=server)
-```
-
 There are two parts of this application - the "UI" and the "server" part.
+
+[SCHEMATICS]
 
 ### The UI
 
@@ -117,6 +135,21 @@ This is a lazy kind of evaluation - the server code will only run when it needs 
 
 [Insert schematic figure here based on the geyser data]
 [Show the reactivity]
+
+# Shiny from scratch
+
+## A minimal application
+
+We will step by step build a complete R Shiny application. If successful, you will have enough knowledge at the end to start building your own Shiny applications.
+
+You can run the code directly from this notebook, or create an empty .R file (for instance named `app.R`) where you step by step build the application. At this point you will only get a blank page.
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file, already loaded in the notebook
+ui <- fluidPage()
+server <- function(input, output) {}  
+shinyApp(ui=ui, server=server)
+```
 
 # Preparing an UI
 
@@ -472,43 +505,27 @@ Exercises
 * Download another related dataset from Gapminder (all of them have the same formatting with year and country) and make extra plots using the same filtering thresholds. For example, you could display the GDP in a separate plot.
 
 
-# Intermediate: Deploying the app to shinyapps.io
+# Extended reading
 
-You already know how to run your app locally. If you have access to a server, you can deploy it yourself using Shiny server (https://rstudio.com/products/shiny/shiny-server/). This requires some Linux-knowledge, but is comparably much easier than deploying a server yourself from scratch!
+These sections are intended to showcase some features I have found to be very useful in regards to RShiny, but are not strictly needed to get started. Feel free to read it, run it or skip it.
 
-An even easier way (if you are fine with deploying your app publicly) is to deploy it to `shinyapps.io`. This can be done in a matter of minute. You get up to 5 applications and 25 active hours for free. 
-
-All instructions below are outlined in more details at https://docs.rstudio.com/shinyapps.io/getting-started.html.
-
-First:
-
-1. Go to shinyapps.io and create a new account - Note that your account name will be used as part of the URL for your apps
-2. Install the R-package {rsconnect}
-
-Next, you need to retrieve tokens used to connect. Go to the Account/Tokens page and click "Show". This will give you a line of code calling the function `rsconnect::setAccountInfo(name='accountname', token=<TOKEN>, secret=<SECRET>)`.
-
-Now you are all set to deploy your app! Either by clicking the `publish` button in the top right (the blue symbol looking like an eye), or by executing the command:
-
-```{r eval=FALSE}
-rsconnect::deployApp()
+```{r}
+library(DT)
+library(plotly)
+library(rsconnect)
 ```
 
-Have some patience while it prepares it. At the end it will give you an URL. This is were you now can show of your Shiny app to anyone!
+## Showing interactive tables using DT
 
-# Intermediate point: Further interactivity with Plotly
+As a final step, we might want to show the displayed raw data directly. For this, we need to load the {DT} package (this can be done without, but then it looks much less attractive!). The output point is called `DTOutput`, and for rendering we use the command `DT::renderDataTable`.
 
-Plotly is a library giving us the chance to make the plots directly interactive - meaning that we can hover and click elements directly, and use a range of tools such as zooming. It is possible to use it to do more advanced tasks such as executing code when clicking or marking certain parts of the graph, but that is beyond the scope of this tutorial.
-
-To use Plotly you need to load (and install) the library {plotly}. It has its own custom syntax for defining plots and contains a range of plots (it can also be used in Python). It is also compatible with ggplot-plots using the `ggplotly` function.
-
-To incorporate Plotly, we need to update our `plotOutput` and `renderPlot` points to `plotlyOutput` and `renderPlotly`. Next, we convert our ggplot outputs by sending the plot object into the `ggplotly` function. Then we are ready to go!
-
-Some things do not work out of the box here unfortunately. For instance, I would have preferred to show the year in addition to the life expectancy. To achieve this you might need to look into the Plotly documentation (https://plotly.com/r/box-plots/).
+The reactive table obtained from `data_long_filtered` can be rendered directly, but it is often easier for humans to read in wide format. For this, we can use the {tidyr} (part of Tidyverse) command `pivot_wider` where we specify which column contains what will become colum headers, and what column contains the values.
 
 ```{r}
 # library(shiny) <- Uncomment if running in a separate .R file
 # library(tidyverse)
 # library(plotly)
+# library(DT)
 # If running in a separate .R file - insert the loading of the dataset here
 
 all_countries <- unique(data_long$country)
@@ -521,8 +538,8 @@ ui <- fluidPage(
             selectInput(inputId="countries", label="Countries", choices = all_countries, multiple = TRUE, selected=c("Sweden", "Denmark", "Norway", "Iceland", "Finland"))
         ),
         mainPanel(
-            plotlyOutput(outputId="year_range_plot"),
-            plotlyOutput(outputId="year_range_boxplot")
+            plotOutput(outputId="year_range_plot"),
+            plotOutput(outputId="year_range_boxplot")
         )
     )
 )
@@ -536,32 +553,34 @@ server <- function(input, output) {
     
     output$year_range_plot <- renderPlotly({
         
-        plt <- ggplot(data_long_filtered(), aes(x=year, y=life_expectancy, color=country)) +
+        ggplot(data_long_filtered(), aes(x=year, y=life_expectancy, color=country)) +
             geom_line()
-        ggplotly(plt)
     })
     
     output$year_range_boxplot <- renderPlotly({
-        plt <- ggplot(data_long_filtered(), aes(x=country, y=life_expectancy, fill=country, text=year)) + 
+        ggplot(data_long_filtered(), aes(x=country, y=life_expectancy, fill=country, text=year)) + 
             geom_boxplot()
-        ggplotly(plt, tooltip="text")
     })
-    
+
 }
 shinyApp(ui=ui, server=server)
 ```
 
-# Intermediate point: Showing interactive tables using DT
 
-As a final step, we might want to show the displayed raw data directly. For this, we need to load the {DT} package (this can be done without, but then it looks much less attractive!). The output point is called `DTOutput`, and for rendering we use the command `DT::renderDataTable`.
+## Further interactivity with Plotly
 
-The reactive table obtained from `data_long_filtered` can be rendered directly, but it is often easier for humans to read in wide format. For this, we can use the {tidyr} (part of Tidyverse) command `pivot_wider` where we specify which column contains what will become colum headers, and what column contains the values.
+Plotly is a library giving us the chance to make the plots directly interactive - meaning that we can hover and click elements directly, and use a range of tools such as zooming. It is possible to use it to do more advanced tasks such as executing code when clicking or marking certain parts of the graph, but that is beyond the scope of this tutorial.
+
+To use Plotly you need to load (and install) the library {plotly}. It has its own custom syntax for defining plots and contains a range of plots (it can also be used in Python). It is also compatible with ggplot-plots using the `ggplotly` function.
+
+To incorporate Plotly, we need to update our `plotOutput` and `renderPlot` points to `plotlyOutput` and `renderPlotly`. Next, we convert our ggplot outputs by sending the plot object into the `ggplotly` function. Then we are ready to go!
+
+Some things do not work out of the box here unfortunately. For instance, I would have preferred to show the year in addition to the life expectancy. To achieve this you might need to look into the Plotly documentation (https://plotly.com/r/box-plots/).
 
 ```{r}
 # library(shiny) <- Uncomment if running in a separate .R file
 # library(tidyverse)
 # library(plotly)
-# library(DT)
 # If running in a separate .R file - insert the loading of the dataset here
 
 all_countries <- unique(data_long$country)
@@ -607,6 +626,29 @@ server <- function(input, output) {
 }
 shinyApp(ui=ui, server=server)
 ```
+
+## Deploying the app to shinyapps.io
+
+You already know how to run your app locally. If you have access to a server, you can deploy it yourself using Shiny server (https://rstudio.com/products/shiny/shiny-server/). This requires some Linux-knowledge, but is comparably much easier than deploying a server yourself from scratch!
+
+An even easier way (if you are fine with deploying your app publicly) is to deploy it to `shinyapps.io`. This can be done in a matter of minute. You get up to 5 applications and 25 active hours for free. 
+
+All instructions below are outlined in more details at https://docs.rstudio.com/shinyapps.io/getting-started.html.
+
+First:
+
+1. Go to shinyapps.io and create a new account - Note that your account name will be used as part of the URL for your apps
+2. Install the R-package {rsconnect}
+
+Next, you need to retrieve tokens used to connect. Go to the Account/Tokens page and click "Show". This will give you a line of code calling the function `rsconnect::setAccountInfo(name='accountname', token=<TOKEN>, secret=<SECRET>)`.
+
+Now you are all set to deploy your app! Either by clicking the `publish` button in the top right (the blue symbol looking like an eye), or by executing the command:
+
+```{r eval=FALSE}
+rsconnect::deployApp()
+```
+
+Have some patience while it prepares it. At the end it will give you an URL. This is were you now can show of your Shiny app to anyone!
 
 # Summary
 
