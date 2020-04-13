@@ -1,0 +1,451 @@
+---
+title: "RShiny from scratch"
+output: html_notebook
+runtime: shiny
+---
+
+# Getting started
+
+## Prerequisites
+
+This tutorial assumes that you have the following things prepared:
+
+* R Studio
+* The R packages: {shiny}, {tidyverse} (for basic parts) and {DT}, {plotly}, {rsconnect} for intermediate parts
+
+You can install the packages by running (it might ask you to restart RStudio - if so, click yes).
+
+Note that this might take some time - in particular if the {tidyverse} package is not installed.
+
+```{r eval=FALSE}
+install.packages(c("shiny", "tidyverse", "DT", "plotly", "rsconnect"))
+```
+
+And load the packages.
+
+```{r}
+library(shiny)
+library(tidyverse)
+theme_set(theme_classic())  # Replaces the default ggplot2 look, not required
+
+# Optional
+library(DT)
+library(plotly)
+library(rsconnect)
+```
+
+## Retrieve a dataset
+
+Feel free to use any dataset you have at hand. This would require that you can independently parse your data in the correct formats - if this feels uncomfortable please use the supplemented data. I have prepared a dataset from Gapminder - an organization dedicated to spread a factful view of the world.
+
+Data from a range of topics can be explored at:
+
+https://www.gapminder.org/data/
+
+Another pages:
+
+* Kaggle (...), has many great datasets, but might require some more pre-parsing before visualizing
+* Coronavirus https://ourworldindata.org/coronavirus-source-data
+
+I have prepared a comma-separated Gapminder dataset on life expectancy from year 1800. If you have your own dataset, exchange the file path for that one instead.
+
+```{r}
+data_wide <- read_csv("data/gapminder_life_expectancy_years.csv")
+```
+
+This data is in *wide format*, meaning that we have one column per year. In the plotting library {ggplot2} (part of {tidyverse}) the data is expected to be in *long* format with one column showing the year and one column containing all the life expectancies.
+
+This transformation can be done using the command `pivot_longer`. Make sure to inspect the data with `head` and `colnames` so that you understand what has happened.
+
+```{r}
+data_long <- data_wide %>% 
+# The -1 means that we pivot all columns except the first to one column
+    pivot_longer(-1, names_to = "year", values_to="life_expectancy") %>%
+    mutate(year=as.numeric(year))
+
+colnames(data_wide)
+colnames(data_long)
+
+head(data_wide)
+head(data_long)
+```
+
+## Create new Shiny project
+
+We are ready to start the Shiny-project!
+
+In RStudio, go to `File -> New File -> Shiny Web App`, write in a name for the application and leave the application type as the default (single file). Click "Create".
+
+This will generate a skeleton for an app. Try runnning it by clicking "Run app". This should open the default shiny application (looking like the image below). Try dragging the "number of bins" slider. The plot should change accordingly.
+
+![default](images/default_shiny_app.png)
+
+# Shiny from scratch
+
+## A very minimal application
+
+Now we will break down the code and go through it step by step. 
+
+Either replace the content within the .R file you just created with the following line, or run it directly from the notebook.
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+ui <- fluidPage()
+server <- function(input, output) {}  
+shinyApp(ui=ui, server=server)
+```
+
+There are two parts of this application - the "UI" and the "server" part.
+
+### The UI
+
+The **UI** ("User Interface") is used to specify what "elements" should be included in the R Shiny graphical interface. This produces HTML which is used to display your element in the browser. You can try printing the ui object (`print(ui)`) and you will see that it is simply HTML. 
+
+There are different types of page layouts - `fluidPage()` is a layout based on the Bootstrap web library (LINK) and allows designing your web page in rows, within which you can specify columns.
+
+### The server
+
+The **server** part is what will happen in the background. If deploying as a web page, this part will be run on the computer hosting the code, while the UI will be run on the users computer. This part will generate data and figures which subsequently can be displayed in the interface.
+
+The `function(input, output) {}` is the server function. It always takes the UI input and output elements as arguments. The `input` will contain all your input elements, such as the slider. The `output` will contain the output points, such as where the plots should be rendered. Right now the body of it is empty. Soon we will add more code here!
+
+### A note on reactivity
+
+In the default example we saw an interactive histogram. The UI contains information about that we want a panel layout, one input element and one output point for the plot. The server will recalculate the the plot based on the input it receives (in this case - from a single input slider) and send it to the UI to be displayed.
+
+This is a lazy kind of evaluation - the server code will only run when it needs to. The term for this kind of programming is 'reactive programming'. More on this later.
+
+[Insert schematic figure here based on the geyser data]
+[Show the reactivity]
+
+# Preparing an UI
+
+Here we will add some different headers and input elements, as well as an output point where we later will show two figures.
+
+## Adding a minimal layout
+
+Now we will add a title using the `titlePanel` function and a sidebar layout using the `sidebarLayout` function.
+
+You can use many different types of layout for RShiny. Here, we stick with the default "sidebarLayout" which gives us a panel to the left for the settings, and a bigger panel to the right for showing plots. We insert both the `titlePanel` and the `sidebarLayout` within the `fluidPage` function we specified previously. 
+
+Note that the elements are separated by commas, and nested (similar to HTML). A common error is to miss one comma, or use one too many. Often RStudio will give you useful hints on where to look to fix this.
+
+Try running the code now. Doesn't look so fancy yet, so let's add some input- and output elements!
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+ui <- fluidPage(
+    titlePanel("Life expectancy across country and time"),
+    sidebarLayout(
+        sidebarPanel(),
+        mainPanel()
+    )
+)
+server <- function(input, output) {}
+shinyApp(ui=ui, server=server)
+```
+
+As before, you can try printing the `ui` element to see the HTML by running `print(ui)`.
+
+## Add first input- and output- elements
+
+There is a range of different input-elements we can use (same as for a normal web page). Many of them are specified in this convenient cheat sheet: https://shiny.rstudio.com/images/shiny-cheatsheet.pdf
+
+### Input elements
+
+Some very useful examples:
+
+* **sliderInput** Interactive slider over a range of values
+* **checkboxInput** Gives a simple checkbox giving a "TRUE" or "FALSE" value
+* **numericInput** Directly specify a numeric value - can be both whole numbers (integer) or rounded (float)
+* **textInput** Specify free text directly
+* **selectInput** Select one or more of a set of predefined choices
+
+Let's start with just a slider. You can check which arguments it requires by running `?sliderInput` (this is a useful way to check documentation for any function). All input elements require an ID (which we need to identify it in the server code later) and a label which will show the user what it does. Beyond that, `sliderInput` needs a minimum and maximum value. Also, it is often useful to specify `step` showing the amount difference between different values.
+
+### Output elements
+
+Next, we need to specify output points. We can render different things such as figures, images, text or tables. We start with an output for rendering a figure using the `plotOutput`. This only requires `outputID` - an ID which will be used in the server to identify this output point.
+
+Try running it now. Now you should be able to see the layout. Nothing is shown in the plot yet though, because we have only specified the UI part.
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+ui <- fluidPage(
+    titlePanel("Life expectancy across country and time"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(inputId="year_range", label="Year range", min=1800, max=2030, step=1),
+            selectInput(inputId="countries", label="Countries", choices = c("Sweden", "Denmark", "Norway", "Iceland", "Finland"), value="Sweden")
+        ),
+        mainPanel(
+            plotOutput(outputID="year_range_plot")
+        )
+    )
+)
+server <- function(input, output) {}
+shinyApp(ui=ui, server=server)
+```
+
+# Setting up the server
+
+Up until now our server function have been completely empty. Now we will add code for generating a figure which subsequently will be sent to the UI and shown to the user.
+
+## Creating the plot
+
+It is generally a good practice to make sure you understand the pieces you are working with before building them together. In RShiny I prefer to always make sure the data parsing and plotting works independently before plugging them into RShiny.
+
+We loaded our dataset in the beginning of this tutorial. It is in three columns which specify country, year and the life expectancy.
+
+We can filter out certain entries using the `filter` command. Let's prepare a dataset only containing entries for Sweden.
+
+```{r}
+data_long_sweden <- data_long %>% filter(country == "Sweden")
+head(data_long_sweden)
+```
+
+Next, we insert it into ggplot. There are three key point here:
+
+* The input data should be in long format - one column per type of data
+* We specify one or several aesthetics (such as position or coloring)
+* We specify one or several geometics
+
+```{r}
+ggplot(data_long_sweden, aes(x=year, y=life_expectancy)) + 
+    geom_line() +
+    ggtitle("Swedish life expectancy")
+```
+
+Looking good! 
+
+Now, let's see if we can focus on a smaller range by filtering the dataset further before plotting it.
+
+```{r}
+data_long_sweden_range <- data_long %>% 
+    filter(country == "Sweden")
+    filter(year >= 1900 & year <= 2000)
+head(data_long_sweden_range)
+ggplot(data_long_sweden_range, aes(x=year, y=life_expectancy)) + 
+    geom_line() +
+    ggtitle("Swedish life expectancy")
+```
+
+What happened 1918? The Spanish flu infected a third of Swedens population and killed XXX. Other than that it looks like the 20ths went pretty well here.
+
+Now we have everything we need to make this interactive!
+
+## Inserting the plot in RShiny
+
+Now, we are ready to run the plot within R Shiny! We use the same UI as before, but now we add a server part which send a static ggplot figure to the "distPlot" output point. (Remember that you specified this as a plotOutput point in the main panel).
+
+-> Explain the 'renderPlot'
+
+Try it out! At this point you should see the same plot as we previously produced using ggplot, but nothing will happen when you drag the sliders. This is because we also need to link the inputs into the server code.
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+# library(tidyverse)
+# If running in a separate .R file - insert the loading of the dataset here
+
+ui <- fluidPage(
+    titlePanel("Life expectancy across country and time"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(inputId="year_range", label="Year range", value=c(1800, 2030), min=1800, max=2030, step=1),
+            selectInput(inputId="countries", label="Countries", choices = c("Sweden", "Denmark", "Norway", "Iceland", "Finland"), selected="Sweden")
+        ),
+        mainPanel(
+            plotOutput(outputId="year_range_plot")
+        )
+    )
+)
+server <- function(input, output) {
+    
+    output$year_range_plot <- renderPlot({
+        
+        data_long_sweden_range <- data_long %>% 
+            filter(country == "Sweden") %>%
+            filter(year >= 1900 & year <= 2020)
+        
+        ggplot(data_long_sweden_range, aes(x=year, y=life_expectancy)) + 
+            geom_line() +
+            ggtitle("Swedish life expectancy")
+    })
+    
+}
+shinyApp(ui=ui, server=server)
+```
+
+## Making our Shiny app interactive
+
+We access the output point of the UI using "output$distPlot". Quite logically, we can access our input elements using "input$bins" and "input$title". We specify these ones directly within the "renderPlot". 
+
+By doing this, we link these parameters from the interface into the plot. RShiny will now automatically detect when any of these change, and when this happends, it will rerun the code. This is called "reactivity" - it will not continuously  rerun the function - only as a *reaction* to that some input related to the function has changed.
+
+Try it out! Change the number of bins and title. You should directly see these changes appear in the plot.
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+# library(tidyverse)
+# If running in a separate .R file - insert the loading of the dataset here
+
+all_countries <- unique(data_long$country)
+
+ui <- fluidPage(
+    titlePanel("Life expectancy across country and time"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(inputId="year_range", label="Year range", value=c(1800, 2030), min=1800, max=2030, step=10),
+            selectInput(inputId="countries", label="Countries", choices = all_countries, multiple = TRUE, selected=c("Sweden", "Denmark", "Norway", "Iceland", "Finland"))
+        ),
+        mainPanel(
+            plotOutput(outputId="year_range_plot")
+        )
+    )
+)
+server <- function(input, output) {
+    
+    output$year_range_plot <- renderPlot({
+        
+        data_long_filtered <- data_long %>% 
+            filter(country %in% input$countries) %>%
+            filter(year >= input$year_range[1] & year <= input$year_range[2])
+        
+        ggplot(data_long_filtered, aes(x=year, y=life_expectancy, color=country)) + 
+            geom_line() +
+            ggtitle("Life expectancies") +
+            xlab("Year") +
+            ylab("Life expectancy (years)")
+    })
+    
+}
+shinyApp(ui=ui, server=server)
+```
+
+If everything works fine then you should be able to explore the data now! Try changing the selected year range to focus on different centuries.
+
+Questions (this is mainly to get used to the RShiny way to inspect the data)
+
+* Which nordic country had the lowest overall life expectancy during 1900-1950?
+* Can you spot when the Spanish flu hit the nordic countries?
+* 1800 to 1900 was a rocky ride (or have more erratic data, not sure which). Which nordic country was overall best off back then?
+* Select a few countries - roughly one from each continent and look at the trends. Are they roughly as you expected?
+
+Every dip or rise in these curves have had dramatic real world impact!
+
+### Exercises
+
+* Try adding an option for line width. The `geom_line` argument can take a size argument (`geom_line(size=3)` for example). See if you can add a slider where the user can decide the width.
+* Add an input text argument where the title of the plot can be specified
+* You can display individual data points by replacing the `geom_line` with the `geom_point` argument. Add a checkbox input where the user can decide how the data should be displayed.
+* Add another numeric argument which can specify the size of the font (this can be done by adding a `+ theme(text=element_text(size=20))` argument after the existing ggplot arguments)
+
+# NEXT
+
+1. Add a second output plot with a common parsing function
+2. Show the raw data in a table
+3. Interactivity using DT and plotly
+4. Deploy!
+
+
+
+Exercises
+
+* Download another related dataset from Gapminder (all of them have the same formatting with year and country) and make extra plots using the same filtering thresholds. For example, you could display the GDP in a separate plot.
+
+
+
+
+## Adding a second output plot
+
+As we saw before, the faithful geyser dataset contains two columns - the number of eruptions and the waiting time for the volcanos. We might want to show these ones simultaneously in different plots. To do this we simply need to:
+
+* Add another plotOutput in the UI (with another ID)
+* Link another renderPlot to the output on the server side
+* Within this renderPlot, generate the second plot
+
+To remind ourselves of how the data look, just run the "head" command to look at the first lines.
+
+```{r}
+head(faithful)
+```
+
+
+```{r}
+ui <- fluidPage(
+    titlePanel("My Fancy Title"),
+    sidebarLayout(
+        sidebarPanel(
+            selectInput(
+                "countries",
+                "First country",
+                choices=unique(gapminder_parsed$country), 
+                selected = c("Sweden", "Denmark", "Finland", "Norway", "Iceland"), 
+                multiple = TRUE
+            ),
+            sliderInput(
+                "year_range",
+                "Year range",
+                min=min(gapminder_parsed$year),
+                max=max(gapminder_parsed$year),
+                step=1,
+                value = c(min(gapminder_parsed$year), max(gapminder_parsed$year))
+            )
+        ),
+        mainPanel(
+            plotOutput("dot_plot"),  # Here, we define a plot output point with the ID "distPlot"
+            plotOutput("box_plot")
+        )
+    )
+)
+
+server <- function(input,  output)  {
+
+    target_countries_data <- reactive({
+        gapminder_parsed %>% 
+            filter(country %in% input$countries) %>%
+            filter(year > input$year_range[1] & year < input$year_range[2])
+    })
+    
+    output$dot_plot <- renderPlot({
+        ggplot(target_countries_data(), aes(x=year, y=income, color=country)) + geom_point()
+    })
+    
+    output$box_plot <- renderPlot({
+        ggplot(target_countries_data(), aes(x=country, y=income)) + geom_boxplot()
+    })
+}
+shinyApp(ui=ui, server=server)
+```
+
+Note that the functions in the server part are not separated by commas! This is a regular function, and you can think of the output as a list to which you assign values.
+
+# Making your app interactive using DT and Plotly
+
+```{r}
+
+```
+
+
+# Deploying the app to shinyapps.io
+
+1. Go to shinyapps.io and create a new account
+2. Install the R-package {rsconnect}
+3. Retrieve tokens from the dashboard
+
+```{r eval=FALSE}
+library(rsconnect)
+deployApp()
+```
+
+
+
+
+
+
+
+
+
+
+
+
