@@ -133,6 +133,8 @@ In the default example we saw an interactive histogram. The UI contains informat
 
 This is a lazy kind of evaluation - the server code will only run when it needs to. The term for this kind of programming is 'reactive programming'. More on this later.
 
+![Basic reactivity](images/react_two_input_one_plot.svg)
+
 [Insert schematic figure here based on the geyser data]
 [Show the reactivity]
 
@@ -208,11 +210,11 @@ ui <- fluidPage(
     titlePanel("Life expectancy across country and time"),
     sidebarLayout(
         sidebarPanel(
-            sliderInput(inputId="year_range", label="Year range", min=1800, max=2030, step=1),
-            selectInput(inputId="countries", label="Countries", choices = c("Sweden", "Denmark", "Norway", "Iceland", "Finland"), value="Sweden")
+            sliderInput(inputId="year_range", label="Year range", min=1800, max=2030, step=1, value = c(1800, 2030)),
+            selectInput(inputId="countries", label="Countries", choices = c("Sweden", "Denmark", "Norway", "Iceland", "Finland"), selected="Sweden")
         ),
         mainPanel(
-            plotOutput(outputID="year_range_plot")
+            plotOutput(outputId="year_range_plot")
         )
     )
 )
@@ -255,7 +257,7 @@ Now, let's see if we can focus on a smaller range by filtering the dataset furth
 
 ```{r}
 data_long_sweden_range <- data_long %>% 
-    filter(country == "Sweden")
+    filter(country == "Sweden") %>%
     filter(year >= 1900 & year <= 2000)
 head(data_long_sweden_range)
 ggplot(data_long_sweden_range, aes(x=year, y=life_expectancy)) + 
@@ -383,7 +385,7 @@ First, let's try out the plot separately. We use code very similar to previously
 
 ```{r}
 data_long_countries_range <- data_long %>% 
-    filter(country %in% c("Sweden", "Denmark", "Norway", "Finland", "Iceland"))
+    filter(country %in% c("Sweden", "Denmark", "Norway", "Finland", "Iceland")) %>%
     filter(year >= 1920 & year <= 2020)
 head(data_long_countries_range)
 ggplot(data_long_countries_range, aes(x=year, y=life_expectancy, color=country)) + 
@@ -447,7 +449,7 @@ shinyApp(ui=ui, server=server)
 
 Great! One ugly part here though is that we needed to duplicate the parsing part  of the dataset (converting `data_long` into `data_long_filtered`). This is something we want to avoid as this kind of coding over time will make our code less maintainable and less readable. The way to do this in R Shiny is by using a reactive variable.
 
-[ILLUSTRATE]
+![Dual plot reactivity](images/dual_plot_reactivity.svg)
 
 We use the `reactive` keyword and put in an expression which here is dependent on the reactive input variables `input$countries` and `input$year_range`. This expression will be rerun every time any of these input variables change, which in turn will trigger the plots to rerender (which now both depend on this reactive element).
 
@@ -539,7 +541,8 @@ ui <- fluidPage(
         ),
         mainPanel(
             plotOutput(outputId="year_range_plot"),
-            plotOutput(outputId="year_range_boxplot")
+            plotOutput(outputId="year_range_boxplot"),
+            DT::dataTableOutput(outputId="table_display")
         )
     )
 )
@@ -551,17 +554,20 @@ server <- function(input, output) {
             filter(year >= input$year_range[1] & year <= input$year_range[2])
     })
     
-    output$year_range_plot <- renderPlotly({
+    output$year_range_plot <- renderPlot({
         
         ggplot(data_long_filtered(), aes(x=year, y=life_expectancy, color=country)) +
             geom_line()
     })
     
-    output$year_range_boxplot <- renderPlotly({
+    output$year_range_boxplot <- renderPlot({
         ggplot(data_long_filtered(), aes(x=country, y=life_expectancy, fill=country, text=year)) + 
             geom_boxplot()
     })
-
+        
+    output$table_display <- DT::renderDataTable({
+        data_long_filtered() %>% pivot_wider(names_from="year", values_from="life_expectancy")
+    })
 }
 shinyApp(ui=ui, server=server)
 ```
