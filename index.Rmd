@@ -340,12 +340,130 @@ Every dip or rise in these curves have had dramatic real world impact!
 * You can display individual data points by replacing the `geom_line` with the `geom_point` argument. Add a checkbox input where the user can decide how the data should be displayed.
 * Add another numeric argument which can specify the size of the font (this can be done by adding a `+ theme(text=element_text(size=20))` argument after the existing ggplot arguments)
 
-# NEXT
+# Adding a second plot output
 
-1. Add a second output plot with a common parsing function
-2. Show the raw data in a table
-3. Interactivity using DT and plotly
-4. Deploy!
+One if the powerful things with RShiny is how easy it is to extend the interface to accomodate multiple figures showing different aspects of the same data.
+
+Here, we produce a boxplot for the same dataset.
+
+First, let's try out the plot separately. We use code very similar to previously, but we exchange the `geom_line` with a `geom_boxplot`.
+
+```{r}
+data_long_countries_range <- data_long %>% 
+    filter(country %in% c("Sweden", "Denmark", "Norway", "Finland", "Iceland"))
+    filter(year >= 1920 & year <= 2020)
+head(data_long_countries_range)
+ggplot(data_long_countries_range, aes(x=year, y=life_expectancy, color=country)) + 
+    geom_boxplot() +
+    ggtitle("Nordic countries life expectancy 1900 - 2020")
+```
+
+It seems like the better years are relatively similar, but there have been some tougher years in Finland and Iceland during the last 100 years.
+
+Now we are ready to link this into the server part.
+
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+# library(tidyverse)
+# If running in a separate .R file - insert the loading of the dataset here
+
+all_countries <- unique(data_long$country)
+
+ui <- fluidPage(
+    titlePanel("Life expectancy across country and time"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(inputId="year_range", label="Year range", value=c(1800, 2030), min=1800, max=2030, step=10),
+            selectInput(inputId="countries", label="Countries", choices = all_countries, multiple = TRUE, selected=c("Sweden", "Denmark", "Norway", "Iceland", "Finland"))
+        ),
+        mainPanel(
+            plotOutput(outputId="year_range_plot"),
+            plotOutput(outputId="year_range_boxplot")
+        )
+    )
+)
+server <- function(input, output) {
+    
+    output$year_range_plot <- renderPlot({
+        
+        data_long_filtered <- data_long %>% 
+            filter(country %in% input$countries) %>%
+            filter(year >= input$year_range[1] & year <= input$year_range[2])
+        
+        ggplot(data_long_filtered, aes(x=year, y=life_expectancy, color=country)) + 
+            geom_line() +
+            ggtitle("Life expectancies") +
+            xlab("Year") +
+            ylab("Life expectancy (years)")
+    })
+    
+    output$year_range_boxplot <- renderPlot({
+        data_long_filtered <- data_long %>% 
+            filter(country %in% input$countries) %>%
+            filter(year >= input$year_range[1] & year <= input$year_range[2])
+        
+        ggplot(data_long_filtered, aes(x=year, y=life_expectancy, color=country)) + 
+            geom_boxplot() +
+            ggtitle("Life expectancies, boxplot")
+    })
+    
+}
+shinyApp(ui=ui, server=server)
+```
+
+Great! One ugly part here though is that we needed to duplicate the parsing part  of the dataset (converting `data_long` into `data_long_filtered`). This is something we want to avoid as this kind of coding over time will make our code less maintainable and less readable. The way to do this in R Shiny is by using a reactive variable.
+
+[ILLUSTRATE]
+
+We use the `reactive` keyword and put in an expression which here is dependent on the reactive input variables `input$countries` and `input$year_range`. This expression will be rerun every time any of these input variables change, which in turn will trigger the plots to rerender (which now both depend on this reactive element).
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+# library(tidyverse)
+# If running in a separate .R file - insert the loading of the dataset here
+
+all_countries <- unique(data_long$country)
+
+ui <- fluidPage(
+    titlePanel("Life expectancy across country and time"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(inputId="year_range", label="Year range", value=c(1800, 2030), min=1800, max=2030, step=10),
+            selectInput(inputId="countries", label="Countries", choices = all_countries, multiple = TRUE, selected=c("Sweden", "Denmark", "Norway", "Iceland", "Finland"))
+        ),
+        mainPanel(
+            plotOutput(outputId="year_range_plot"),
+            plotOutput(outputId="year_range_boxplot")
+        )
+    )
+)
+server <- function(input, output) {
+    
+    data_long_filtered <- reactive({
+        data_long %>% 
+            filter(country %in% input$countries) %>%
+            filter(year >= input$year_range[1] & year <= input$year_range[2])
+    })
+    
+    output$year_range_plot <- renderPlot({
+        
+        ggplot(data_long_filtered(), aes(x=year, y=life_expectancy, color=country)) +
+            geom_line() +
+            ggtitle("Life expectancies") +
+            xlab("Year") +
+            ylab("Life expectancy (years)")
+    })
+    
+    output$year_range_boxplot <- renderPlot({
+        ggplot(data_long_filtered(), aes(x=year, y=life_expectancy, color=country)) + 
+            geom_boxplot() +
+            ggtitle("Life expectancies, boxplot")
+    })
+    
+}
+shinyApp(ui=ui, server=server)
+```
 
 
 
@@ -354,98 +472,154 @@ Exercises
 * Download another related dataset from Gapminder (all of them have the same formatting with year and country) and make extra plots using the same filtering thresholds. For example, you could display the GDP in a separate plot.
 
 
+# Intermediate: Deploying the app to shinyapps.io
 
+You already know how to run your app locally. If you have access to a server, you can deploy it yourself using Shiny server (https://rstudio.com/products/shiny/shiny-server/). This requires some Linux-knowledge, but is comparably much easier than deploying a server yourself from scratch!
 
-## Adding a second output plot
+An even easier way (if you are fine with deploying your app publicly) is to deploy it to `shinyapps.io`. This can be done in a matter of minute. You get up to 5 applications and 25 active hours for free. 
 
-As we saw before, the faithful geyser dataset contains two columns - the number of eruptions and the waiting time for the volcanos. We might want to show these ones simultaneously in different plots. To do this we simply need to:
+All instructions below are outlined in more details at https://docs.rstudio.com/shinyapps.io/getting-started.html.
 
-* Add another plotOutput in the UI (with another ID)
-* Link another renderPlot to the output on the server side
-* Within this renderPlot, generate the second plot
+First:
 
-To remind ourselves of how the data look, just run the "head" command to look at the first lines.
+1. Go to shinyapps.io and create a new account - Note that your account name will be used as part of the URL for your apps
+2. Install the R-package {rsconnect}
 
-```{r}
-head(faithful)
+Next, you need to retrieve tokens used to connect. Go to the Account/Tokens page and click "Show". This will give you a line of code calling the function `rsconnect::setAccountInfo(name='accountname', token=<TOKEN>, secret=<SECRET>)`.
+
+Now you are all set to deploy your app! Either by clicking the `publish` button in the top right (the blue symbol looking like an eye), or by executing the command:
+
+```{r eval=FALSE}
+rsconnect::deployApp()
 ```
 
+Have some patience while it prepares it. At the end it will give you an URL. This is were you now can show of your Shiny app to anyone!
+
+# Intermediate point: Further interactivity with Plotly
+
+Plotly is a library giving us the chance to make the plots directly interactive - meaning that we can hover and click elements directly, and use a range of tools such as zooming. It is possible to use it to do more advanced tasks such as executing code when clicking or marking certain parts of the graph, but that is beyond the scope of this tutorial.
+
+To use Plotly you need to load (and install) the library {plotly}. It has its own custom syntax for defining plots and contains a range of plots (it can also be used in Python). It is also compatible with ggplot-plots using the `ggplotly` function.
+
+To incorporate Plotly, we need to update our `plotOutput` and `renderPlot` points to `plotlyOutput` and `renderPlotly`. Next, we convert our ggplot outputs by sending the plot object into the `ggplotly` function. Then we are ready to go!
+
+Some things do not work out of the box here unfortunately. For instance, I would have preferred to show the year in addition to the life expectancy. To achieve this you might need to look into the Plotly documentation (https://plotly.com/r/box-plots/).
 
 ```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+# library(tidyverse)
+# library(plotly)
+# If running in a separate .R file - insert the loading of the dataset here
+
+all_countries <- unique(data_long$country)
+
 ui <- fluidPage(
-    titlePanel("My Fancy Title"),
+    titlePanel("Life expectancy across country and time"),
     sidebarLayout(
         sidebarPanel(
-            selectInput(
-                "countries",
-                "First country",
-                choices=unique(gapminder_parsed$country), 
-                selected = c("Sweden", "Denmark", "Finland", "Norway", "Iceland"), 
-                multiple = TRUE
-            ),
-            sliderInput(
-                "year_range",
-                "Year range",
-                min=min(gapminder_parsed$year),
-                max=max(gapminder_parsed$year),
-                step=1,
-                value = c(min(gapminder_parsed$year), max(gapminder_parsed$year))
-            )
+            sliderInput(inputId="year_range", label="Year range", value=c(1800, 2030), min=1800, max=2030, step=10),
+            selectInput(inputId="countries", label="Countries", choices = all_countries, multiple = TRUE, selected=c("Sweden", "Denmark", "Norway", "Iceland", "Finland"))
         ),
         mainPanel(
-            plotOutput("dot_plot"),  # Here, we define a plot output point with the ID "distPlot"
-            plotOutput("box_plot")
+            plotlyOutput(outputId="year_range_plot"),
+            plotlyOutput(outputId="year_range_boxplot")
         )
     )
 )
-
-server <- function(input,  output)  {
-
-    target_countries_data <- reactive({
-        gapminder_parsed %>% 
+server <- function(input, output) {
+    
+    data_long_filtered <- reactive({
+        data_long %>% 
             filter(country %in% input$countries) %>%
-            filter(year > input$year_range[1] & year < input$year_range[2])
+            filter(year >= input$year_range[1] & year <= input$year_range[2])
     })
     
-    output$dot_plot <- renderPlot({
-        ggplot(target_countries_data(), aes(x=year, y=income, color=country)) + geom_point()
+    output$year_range_plot <- renderPlotly({
+        
+        plt <- ggplot(data_long_filtered(), aes(x=year, y=life_expectancy, color=country)) +
+            geom_line()
+        ggplotly(plt)
     })
     
-    output$box_plot <- renderPlot({
-        ggplot(target_countries_data(), aes(x=country, y=income)) + geom_boxplot()
+    output$year_range_boxplot <- renderPlotly({
+        plt <- ggplot(data_long_filtered(), aes(x=country, y=life_expectancy, fill=country, text=year)) + 
+            geom_boxplot()
+        ggplotly(plt, tooltip="text")
+    })
+    
+}
+shinyApp(ui=ui, server=server)
+```
+
+# Intermediate point: Showing interactive tables using DT
+
+As a final step, we might want to show the displayed raw data directly. For this, we need to load the {DT} package (this can be done without, but then it looks much less attractive!). The output point is called `DTOutput`, and for rendering we use the command `DT::renderDataTable`.
+
+The reactive table obtained from `data_long_filtered` can be rendered directly, but it is often easier for humans to read in wide format. For this, we can use the {tidyr} (part of Tidyverse) command `pivot_wider` where we specify which column contains what will become colum headers, and what column contains the values.
+
+```{r}
+# library(shiny) <- Uncomment if running in a separate .R file
+# library(tidyverse)
+# library(plotly)
+# library(DT)
+# If running in a separate .R file - insert the loading of the dataset here
+
+all_countries <- unique(data_long$country)
+
+ui <- fluidPage(
+    titlePanel("Life expectancy across country and time"),
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(inputId="year_range", label="Year range", value=c(1800, 2030), min=1800, max=2030, step=10),
+            selectInput(inputId="countries", label="Countries", choices = all_countries, multiple = TRUE, selected=c("Sweden", "Denmark", "Norway", "Iceland", "Finland"))
+        ),
+        mainPanel(
+            plotlyOutput(outputId="year_range_plot"),
+            plotlyOutput(outputId="year_range_boxplot"),
+            DTOutput(outputId="table_display")
+        )
+    )
+)
+server <- function(input, output) {
+    
+    data_long_filtered <- reactive({
+        data_long %>% 
+            filter(country %in% input$countries) %>%
+            filter(year >= input$year_range[1] & year <= input$year_range[2])
+    })
+    
+    output$year_range_plot <- renderPlotly({
+        
+        plt <- ggplot(data_long_filtered(), aes(x=year, y=life_expectancy, color=country)) +
+            geom_line()
+        ggplotly(plt)
+    })
+    
+    output$year_range_boxplot <- renderPlotly({
+        plt <- ggplot(data_long_filtered(), aes(x=country, y=life_expectancy, fill=country, text=year)) + 
+            geom_boxplot()
+        ggplotly(plt, tooltip="text")
+    })
+    
+    output$table_display <- DT::renderDataTable({
+        data_long_filtered() %>% pivot_wider(names_from="year", values_from="life_expectancy")
     })
 }
 shinyApp(ui=ui, server=server)
 ```
 
-Note that the functions in the server part are not separated by commas! This is a regular function, and you can think of the output as a list to which you assign values.
+# Summary
 
-# Making your app interactive using DT and Plotly
+That was it, hope it was useful!
+
+If you have any trouble with this tutorial, feel free to throw me an email at jakob [dot] willforss [at] hotmail [dot] com. You can also find me on:
+
+* GitHub
+* Linkedin
+* Twitter
+
+# Session info
 
 ```{r}
-
+sessionInfo()
 ```
-
-
-# Deploying the app to shinyapps.io
-
-1. Go to shinyapps.io and create a new account
-2. Install the R-package {rsconnect}
-3. Retrieve tokens from the dashboard
-
-```{r eval=FALSE}
-library(rsconnect)
-deployApp()
-```
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,3 +1,5 @@
+data/energy_production_per_person.csv
+rsconnect/
 *.Rproj
 .Rhistory
 .Rproj.user/
