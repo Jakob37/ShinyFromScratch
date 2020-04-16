@@ -1,6 +1,6 @@
 # Shiny from scratch
 
-Hands-on tutorial made for the SkåneR UserR! Group (https://www.meetup.com/Skane-R-User-Group).
+Hands-on tutorial made for a SkåneR UserR! Group meetup (https://www.meetup.com/Skane-R-User-Group).
 
 Access the tutorial here: https://jakob37.github.io/ShinyFromScratch/
 ... and the final app here: https://jakobshinyapps.shinyapps.io/ShinyFromScratch/
