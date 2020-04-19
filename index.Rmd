@@ -19,7 +19,7 @@ You can follow this tutorial on your computer by:
 3. Unzip locally
 4. Open the file "index.Rmd" in RStudio
 
-The presentation slides are available [here](presentation.png)
+The presentation slides are available [here](presentation.pdf)
 
 # Introduction
 
@@ -265,6 +265,13 @@ shinyApp(ui=ui, server=server)
 ```
 ![](screenshots/ui2.png)
 
+### Exercises
+
+* Try changing the title of the app to something you think fits good!
+* Try changing the default values of both the year range and the country names (for instance, include "Germany" as an option)
+* Try out one of the input elements `checkboxInput`, `numericInput` and `textInput` (you can check their required parameters by running for instance `?checkboxInput`)
+* Use the `p(...)` element to write a description above the figure in the main panel (right above the `plotOutput` in the `mainPanel`)
+
 ## Setting up the server
 
 Up until now our server function have been completely empty. Now we will add code for generating a figure which subsequently will be sent to the UI and shown to the user.
@@ -410,14 +417,13 @@ If everything works fine, then you should be able to explore the data now! Try c
 ### Exercises
 
 * Which nordic country had the lowest overall life expectancy during 1900-1950?
-* 1800 to 1900 was a rocky ride (or have more erratic data, not sure which). Which nordic country was overall best off back then?
 * Select a few countries - roughly one from each continent and look at the trends. Are they roughly as you expected?
 * Try adding an option for line width. The `geom_line` argument can take a size argument (`geom_line(size=3)` for example). See if you can add a slider where the user can decide the width.
 * Add an input text argument where the title of the plot can be specified
 * Add another numeric argument which can specify the size of the font (this can be done by adding a `+ theme(text=element_text(size=20))` argument after the existing ggplot arguments)
-* (More tricky) You can display individual data points by replacing the `geom_line` with the `geom_point` argument. Use either checkbox-inputs or a select-input to let the user decide how the data should be displayed. (Hint: You can save the ggplot in an object `plt <- ggplot() ...` and then apply `geom_line` or `geom_point` by `plt <- plt + geom_line()`).
+* (Advanced) You can display individual data points by replacing the `geom_line` with the `geom_point` argument. Use either checkbox-inputs or a select-input to let the user decide how the data should be displayed. (Hint: You can save the ggplot in an object `plt <- ggplot() ...` and then apply `geom_line` or `geom_point` by `plt <- plt + geom_line()`).
 
-## Showing the data from multiple angles
+## Showing the data using multiple plots
 
 One of the powerful things with RShiny is how easy it is to extend the interface to accommodate multiple figures showing different aspects of the same data.
 
