@@ -11,7 +11,7 @@ output:
 editor_options:
   chunk_output_type: inline
 ---
-
+# How-to
 You can follow this tutorial on your computer by:
 
 1. Navigating to the [GitHub page](https://github.com/Jakob37/ShinyFromScratch)
