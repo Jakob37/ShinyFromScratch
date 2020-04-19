@@ -11,7 +11,7 @@ ui <- fluidPage(
   titlePanel("Life Expectancy Shiny App"),
   sidebarLayout(
     sidebarPanel(
-      sliderInput(inputId="year_range", label="Year range", value=c(1920, 2020), min=1800, max=2030, step=10),
+      sliderInput(inputId="year_range", label="Year range", value=c(1900, 2020), min=1800, max=2030, step=10),
       selectInput(inputId="countries", label="Countries", choices = all_countries, multiple = TRUE, selected=c("Sweden", "Denmark", "Norway", "Iceland", "Finland"))
     ),
     mainPanel(
