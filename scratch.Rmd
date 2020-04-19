@@ -1,0 +1,26 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+theme_set(theme_classic())
+```
+
+
+```{r}
+df <- data.frame(height=c(180,165,170, 164), weight=c(75, 45, 60, 53))
+df
+plt <- ggplot(df, aes(x=weight, y=height)) + geom_point(size=10) + theme(text=element_text(size=25))
+plt
+ggsave(plt, filename = "images/ggplot_example.png")
+```
+
+```{r}
+filter_df <- df %>% filter(height >= 170)
+plt <- ggplot(filter_df, aes(x=weight, y=height)) + geom_point(size=10) + theme(text=element_text(size=25))
+plt
+ggsave(plt, filename = "images/ggplot_example_filter.png")
+```
+

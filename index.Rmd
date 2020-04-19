@@ -19,6 +19,8 @@ You can follow this tutorial on your computer by:
 3. Unzip locally
 4. Open the file "index.Rmd" in RStudio
 
+The presentation slides are available [here](presentation.png)
+
 # Introduction
 
 The {shiny} R package allows users to rapidly set up interactive interfaces to their datasets, allowing them and others to explore the data directly. 
@@ -412,10 +414,10 @@ If everything works fine, then you should be able to explore the data now! Try c
 * Select a few countries - roughly one from each continent and look at the trends. Are they roughly as you expected?
 * Try adding an option for line width. The `geom_line` argument can take a size argument (`geom_line(size=3)` for example). See if you can add a slider where the user can decide the width.
 * Add an input text argument where the title of the plot can be specified
-* You can display individual data points by replacing the `geom_line` with the `geom_point` argument. Add a checkbox input where the user can decide how the data should be displayed.
 * Add another numeric argument which can specify the size of the font (this can be done by adding a `+ theme(text=element_text(size=20))` argument after the existing ggplot arguments)
+* (More tricky) You can display individual data points by replacing the `geom_line` with the `geom_point` argument. Use either checkbox-inputs or a select-input to let the user decide how the data should be displayed. (Hint: You can save the ggplot in an object `plt <- ggplot() ...` and then apply `geom_line` or `geom_point` by `plt <- plt + geom_line()`).
 
-## Simultaneously showing the data from multiple angles
+## Showing the data from multiple angles
 
 One of the powerful things with RShiny is how easy it is to extend the interface to accommodate multiple figures showing different aspects of the same data.
 
