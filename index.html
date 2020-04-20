@@ -2792,8 +2792,8 @@ div.tocify {
 </div>
 
 
-<div id="how-to" class="section level1">
-<h1>How-to</h1>
+<div id="how-to" class="section level2">
+<h2>How-to</h2>
 <p>You can follow this tutorial on your computer by:</p>
 <ol style="list-style-type: decimal">
 <li>Navigating to the <a href="https://github.com/Jakob37/ShinyFromScratch">GitHub page</a></li>
@@ -2803,12 +2803,17 @@ div.tocify {
 </ol>
 <p>The presentation slides are available <a href="presentation.pdf">here</a></p>
 </div>
-<div id="introduction" class="section level1">
-<h1>Introduction</h1>
+<div id="thanks" class="section level2">
+<h2>Thanks…</h2>
+<p>to <a href="https://www.linkedin.com/in/johnmartingustavsson/">Martin Gustavsson</a> and <a href="https://www.linkedin.com/in/xuan-li-b11832147/">Xuan Li</a> for helping out checking this materials, and the <a href="https://www.meetup.com/Skane-R-User-Group">SkåneR UseR! Group</a> for arranging the workshop!</p>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
 <p>The {shiny} R package allows users to rapidly set up interactive interfaces to their datasets, allowing them and others to explore the data directly.</p>
 <p>Here, we will build a fully functional interface to a life expectancy dataset (or your own data!) in around fifty lines of code. This interface can then be rapidly deployed and shared.</p>
 <p>The tutorial is designed to expect no prior knowledge with {shiny}, and limited knowledge in R. It aims to introduce the concepts gradually to give you an intuition for what is happening behind the scenes. If you have some prior experience, you can breeze through the initial sections and find intermediate exercises and topics towards the end.</p>
 <p>A convenient cheat sheet covering various commonly used {shiny} functionality can be found here: <a href="https://shiny.rstudio.com/images/shiny-cheatsheet.pdf" class="uri">https://shiny.rstudio.com/images/shiny-cheatsheet.pdf</a></p>
+</div>
 <div id="loading-libraries" class="section level2">
 <h2>Loading libraries</h2>
 <p>This tutorial assumes that you have the following things installed:</p>
@@ -2821,12 +2826,12 @@ div.tocify {
 <p>Once installed, load the packages.</p>
 <pre class="r"><code>library(shiny)
 library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.3.0     ✓ purrr   0.3.3
-## ✓ tibble  2.1.3     ✓ dplyr   0.8.5
+<pre><code>## ── Attaching packages ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
+## ✓ tibble  2.1.3     ✓ dplyr   0.8.4
 ## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
-## ✓ readr   1.3.1     ✓ forcats 0.5.0</code></pre>
-<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>theme_set(theme_classic())  # Removes the gray ggplot2 background</code></pre>
@@ -2871,7 +2876,6 @@ library(tidyverse)</code></pre>
 <li>Try adding a descriptive text above the plot using the <code>p(&quot;text&quot;)</code> element (within the main panel in the UI part).</li>
 <li>See if you can add a custom header to the histogram, allowing a user to change the header interactively. Use the <code>?hist</code> to see how to change its header. You can add a text input to the interface using the code <code>textInput(&lt;id&gt;, &lt;label&gt;)</code>, exchanging <code>&lt;id&gt;</code> and <code>&lt;label&gt;</code> with your own values.</li>
 </ol>
-</div>
 </div>
 </div>
 <div id="preparing-a-dataset" class="section level1">
@@ -3463,41 +3467,41 @@ shinyApp(ui=ui, server=server)</code></pre>
 ## Running under: Ubuntu 18.04.4 LTS
 ## 
 ## Matrix products: default
-## BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.7.1
-## LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.7.1
+## BLAS:   /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3
+## LAPACK: /usr/lib/x86_64-linux-gnu/libopenblasp-r0.2.20.so
 ## 
 ## locale:
 ##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+##  [3] LC_TIME=sv_SE.UTF-8        LC_COLLATE=en_US.UTF-8    
+##  [5] LC_MONETARY=sv_SE.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=sv_SE.UTF-8       LC_NAME=C                 
 ##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## [11] LC_MEASUREMENT=sv_SE.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] rsconnect_0.8.16 plotly_4.9.2.1   DT_0.13          forcats_0.5.0   
-##  [5] stringr_1.4.0    dplyr_0.8.5      purrr_0.3.3      readr_1.3.1     
-##  [9] tidyr_1.0.2      tibble_2.1.3     ggplot2_3.3.0    tidyverse_1.3.0 
-## [13] shiny_1.4.0.2   
+##  [1] rsconnect_0.8.16 plotly_4.9.2     DT_0.12          forcats_0.4.0   
+##  [5] stringr_1.4.0    dplyr_0.8.4      purrr_0.3.3      readr_1.3.1     
+##  [9] tidyr_1.0.2      tibble_2.1.3     ggplot2_3.2.1    tidyverse_1.3.0 
+## [13] shiny_1.4.0     
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_1.0.4        lubridate_1.7.8   lattice_0.20-41   assertthat_0.2.1 
+##  [1] Rcpp_1.0.3        lubridate_1.7.4   lattice_0.20-40   assertthat_0.2.1 
 ##  [5] digest_0.6.25     mime_0.9          R6_2.4.1          cellranger_1.1.0 
 ##  [9] backports_1.1.5   reprex_0.3.0      evaluate_0.14     httr_1.4.1       
 ## [13] pillar_1.4.3      rlang_0.4.5       lazyeval_0.2.2    readxl_1.3.1     
 ## [17] data.table_1.12.8 rstudioapi_0.11   rmarkdown_2.1     labeling_0.3     
-## [21] htmlwidgets_1.5.1 munsell_0.5.0     broom_0.5.5       compiler_3.6.3   
+## [21] htmlwidgets_1.5.1 munsell_0.5.0     broom_0.5.4       compiler_3.6.3   
 ## [25] httpuv_1.5.2      modelr_0.1.6      xfun_0.12         pkgconfig_2.0.3  
 ## [29] htmltools_0.4.0   tidyselect_1.0.0  viridisLite_0.3.0 fansi_0.4.1      
 ## [33] crayon_1.3.4      dbplyr_1.4.2      withr_2.1.2       later_1.0.0      
 ## [37] grid_3.6.3        nlme_3.1-144      jsonlite_1.6.1    xtable_1.8-4     
-## [41] gtable_0.3.0      lifecycle_0.2.0   DBI_1.1.0         magrittr_1.5     
-## [45] scales_1.1.0      cli_2.0.2         stringi_1.4.6     farver_2.0.3     
-## [49] fs_1.3.2          promises_1.1.0    xml2_1.2.5        generics_0.0.2   
-## [53] vctrs_0.2.4       tools_3.6.3       glue_1.3.2        hms_0.5.3        
+## [41] gtable_0.3.0      lifecycle_0.1.0   DBI_1.1.0         magrittr_1.5     
+## [45] scales_1.1.0      cli_2.0.1         stringi_1.4.6     farver_2.0.3     
+## [49] fs_1.3.1          promises_1.1.0    xml2_1.2.2        generics_0.0.2   
+## [53] vctrs_0.2.3       tools_3.6.3       glue_1.3.1        hms_0.5.3        
 ## [57] fastmap_1.0.1     yaml_2.2.1        colorspace_1.4-1  rvest_0.3.5      
 ## [61] knitr_1.28        haven_2.2.0</code></pre>
 </div>

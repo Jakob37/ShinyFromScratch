@@ -11,7 +11,9 @@ output:
 editor_options:
   chunk_output_type: inline
 ---
-# How-to
+
+## How-to
+
 You can follow this tutorial on your computer by:
 
 1. Navigating to the [GitHub page](https://github.com/Jakob37/ShinyFromScratch)
@@ -21,7 +23,11 @@ You can follow this tutorial on your computer by:
 
 The presentation slides are available [here](presentation.pdf)
 
-# Introduction
+## Thanks...
+
+to [Martin Gustavsson](https://www.linkedin.com/in/johnmartingustavsson/) and [Xuan Li](https://www.linkedin.com/in/xuan-li-b11832147/) for helping out checking this materials, and the [SkåneR UseR! Group](https://www.meetup.com/Skane-R-User-Group) for arranging the workshop!
+
+## Introduction
 
 The {shiny} R package allows users to rapidly set up interactive interfaces to their datasets, allowing them and others to explore the data directly. 
 
