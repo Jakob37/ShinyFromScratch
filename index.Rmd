@@ -25,7 +25,7 @@ The presentation slides are available [here](presentation.pdf)
 
 ## Thanks...
 
-to [Martin Gustavsson](https://www.linkedin.com/in/johnmartingustavsson/) and [Xuan Li](https://www.linkedin.com/in/xuan-li-b11832147/) for helping out checking this materials, and the [SkåneR UseR! Group](https://www.meetup.com/Skane-R-User-Group) for arranging the workshop!
+to [Martin Gustavsson](https://www.linkedin.com/in/johnmartingustavsson/) and [Xuan Li](https://www.linkedin.com/in/xuan-li-b11832147/) for helping out checking this material, and the [SkåneR UseR! Group](https://www.meetup.com/Skane-R-User-Group) for arranging the workshop!
 
 ## Introduction
 
