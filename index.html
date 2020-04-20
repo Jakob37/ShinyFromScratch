@@ -2826,12 +2826,12 @@ div.tocify {
 <p>Once installed, load the packages.</p>
 <pre class="r"><code>library(shiny)
 library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ── Attaching packages ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
 <pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
 ## ✓ tibble  2.1.3     ✓ dplyr   0.8.4
 ## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
 ## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
-<pre><code>## ── Conflicts ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+<pre><code>## ── Conflicts ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>theme_set(theme_classic())  # Removes the gray ggplot2 background</code></pre>
@@ -2891,7 +2891,7 @@ library(tidyverse)</code></pre>
 </div>
 <div id="optional-parsing-the-data-from-scratch" class="section level2">
 <h2>(Optional) Parsing the data from scratch</h2>
-<p><strong>Note: If you don’t want to do this part - jump straight to the next section and load the data preparsedpreparsed.</strong> It is here as a reference if you want to parse your own data.</p>
+<p><strong>Note: If you don’t want to do this part - jump straight to the next section and load the data preparsed.</strong> It is here as a reference if you want to parse your own data.</p>
 <p>I have prepared a comma-separated Gapminder dataset on life expectancy from the year 1800. If you have your own dataset, exchange the file path for that one instead and adjust the code accordingly.</p>
 <p>First, we load the comma-delimited data using the <code>read_csv</code> command. Next, we use the <code>head</code> command to inspect the first few rows.</p>
 <pre class="r"><code>data_wide &lt;- read_csv(&quot;data/gapminder_life_expectancy_years.csv&quot;)</code></pre>

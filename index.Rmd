@@ -122,7 +122,7 @@ Other great pages for datasets:
 
 ## (Optional) Parsing the data from scratch
 
-**Note: If you don't want to do this part - jump straight to the next section and load the data preparsedpreparsed.** It is here as a reference if you want to parse your own data.
+**Note: If you don't want to do this part - jump straight to the next section and load the data preparsed.** It is here as a reference if you want to parse your own data.
 
 I have prepared a comma-separated Gapminder dataset on life expectancy from the year 1800. If you have your own dataset, exchange the file path for that one instead and adjust the code accordingly. 
 
